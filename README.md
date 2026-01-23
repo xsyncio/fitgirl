@@ -7,13 +7,6 @@
 
 <img src="assets/banner.svg" alt="FitGirl Scraper Banner" width="100%" />
 
-<br/>
-
-[![PyPI version](https://img.shields.io/pypi/v/fitgirl?style=for-the-badge&color=ff00cc)](https://pypi.org/project/fitgirl/)
-[![Python Version](https://img.shields.io/pypi/pyversions/fitgirl?style=for-the-badge&color=3333ff)](https://pypi.org/project/fitgirl/)
-[![License](https://img.shields.io/github/license/xsyncio/fitgirl?style=for-the-badge&color=00ffbd)](LICENSE)
-[![Tests](https://img.shields.io/github/actions/workflow/status/xsyncio/fitgirl/test.yml?branch=main&label=Tests&style=for-the-badge)](https://github.com/xsyncio/fitgirl/actions)
-
 <h3>High-Performance, Async-First Scraper for the FitGirl Repacks Universe</h3>
 
 [**Documentation**](wiki/Home.md) •
