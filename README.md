@@ -1,122 +1,117 @@
-# FitGirl Repack Client Library 🎮📦
+<!--
+ Copyright (c) 2026 Xsyncio
+ Released under the MIT License
+-->
 
-Welcome to the **FitGirl Repack Client Library** – your one-stop solution for fetching, parsing, and exploring game data from the [fitgirl-repacks](https://fitgirl-repacks.site) website! This library provides both **asynchronous** and **synchronous** clients to suit your needs, ensuring you can integrate game data into your projects seamlessly and efficiently. 🚀
+<div align="center">
 
----
+<img src="assets/banner.svg" alt="FitGirl Scraper Banner" width="100%" />
 
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Asynchronous Usage](#asynchronous-usage)
-  - [Synchronous Usage](#synchronous-usage)
-- [Guidelines & What Not to Do](#guidelines--what-not-to-do)
-- [License](#license)
-- [Contact](#contact)
+<br/>
 
----
+[![PyPI version](https://img.shields.io/pypi/v/fitgirl?style=for-the-badge&color=ff00cc)](https://pypi.org/project/fitgirl/)
+[![Python Version](https://img.shields.io/pypi/pyversions/fitgirl?style=for-the-badge&color=3333ff)](https://pypi.org/project/fitgirl/)
+[![License](https://img.shields.io/github/license/xsyncio/fitgirl?style=for-the-badge&color=00ffbd)](LICENSE)
+[![Tests](https://img.shields.io/github/actions/workflow/status/xsyncio/fitgirl/test.yml?branch=main&label=Tests&style=for-the-badge)](https://github.com/xsyncio/fitgirl/actions)
 
-## Overview
+<h3>High-Performance, Async-First Scraper for the FitGirl Repacks Universe</h3>
 
-The **FitGirl Repack Client Library** lets you search for and retrieve detailed information about games available on FitGirl Repacks. Whether you're building a personal game database, integrating game data into your website, or just exploring how such data is parsed, this library is designed to provide a clean and simple interface. 💡
+[**Documentation**](wiki/Home.md) •
+[**Installation**](wiki/Installation.md) •
+[**Usage**](wiki/Usage.md) •
+[**API Reference**](wiki/API-Reference.md)
 
-The library includes:
-- **Game Data Classes:** Structured representations of game metadata.
-- **Parsers:** Functions to convert raw HTML into structured data.
-- **Asynchronous Client:** Ideal for scalable, non-blocking operations.
-- **Synchronous Client:** Perfect for simple scripts or environments where async is not needed.
+</div>
 
 ---
 
-## Features
+## ⚡ Overview
 
-- **Lightweight & Fast:** Written with performance in mind using [httpx](https://www.python-httpx.org/) and [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/).
-- **Dual Client Support:** Choose between asynchronous (`FitGirlClient`) and synchronous (`FitGirlSyncClient`) operations.
-- **Clean API:** Well-documented and user-friendly for quick integration.
-- **Robust Parsing:** Extracts relevant details like title, author, category, download links, and more.
-- **Context Manager Friendly:** Utilize Python's `with` statement for safe and predictable resource management. 🛡️
+**FitGirl Scraper** is a production-grade Python library designed to programmatically interact with *fitgirl-repacks.site*. Unlike simple HTML parsers, it leverages the hidden **WordPress REST API** for robust data retrieval, falling back to high-speed **HTML parsing** (via `selectolax`) only when necessary.
 
----
+It is built for **speed**, **stealth**, and **type safety**.
 
-## Installation
+## ✨ Key Features
 
-You can install the library using [pip](https://pip.pypa.io/en/stable/):
+<table>
+  <tr>
+    <td width="33%"><div align="center"><h3>🚀 Async & Fast</h3></div>I/O bound operations are fully asynchronous. Built on <b>curl_cffi</b> to impersonate real browsers (Chrome 131) and <b>selectolax</b> for ultra-fast C-based parsing.</td>
+    <td width="33%"><div align="center"><h3>🛡️ Type Safe</h3></div>100% type-hinted and runtime validated using <b>msgspec</b>. Every API response is a structured, frozen, and immutable object. No more `Dict[str, Any]`.</td>
+    <td width="33%"><div align="center"><h3>🕵️ Hybrid Engine</h3></div>Intelligently switches between the <b>LinkeDom-like</b> HTML scraping and the hidden <b>JSON API</b> to get the most reliable data available.</td>
+  </tr>
+</table>
+
+*   **Torrent Health**: Real-time UDP tracker scraping to check seeds/peers.
+*   **Smart Search**: Advanced filtering by category (Lossless, Repack), tags, and dates.
+*   **Resilient**: Built-in exponential backoff, retry logic, and error handling.
+*   **Zero-Config**: Works out of the box with sensible defaults.
+
+## 📦 Installation
+
+Requires **Python 3.13+**. Use [uv](https://github.com/astral-sh/uv) for the best experience.
+
+```bash
+uv add fitgirl
+```
+
+Or standard pip:
 
 ```bash
 pip install fitgirl
 ```
 
----
-
-## Usage
-
-### Asynchronous Usage
-
-Using the asynchronous client is perfect when you have multiple concurrent requests or need to integrate with other async frameworks like [FastAPI](https://fastapi.tiangolo.com/).
+## 🚀 Quick Start
 
 ```python
 import asyncio
 from fitgirl import FitGirlClient
 
 async def main():
+    # Context manager handles session cleanup automatically
     async with FitGirlClient() as client:
-        # Search for games
-        game_data_list = await client.search("adventure")
-        for game in game_data_list:
-            print(f"Title: {game.title} | Author: {game.author}")
+        
+        # 1. Search for a game (Uses API for speed)
+        print("🔍 Searching for 'Cyberpunk'...")
+        results = await client.search_api("cyberpunk")
+        
+        for post in results.items:
+            print(f"found: {post.title}")
 
-        # Retrieve a specific game detail
-        game_details = await client.get_game("game-slug-example")
-        for detail in game_details:
-            print(f"Game Detail: {detail.title} - {detail.category}")
+        # 2. Get Deep Details
+        slug = "cyberpunk-2077"
+        print(f"\n📥 Fetching details for {slug}...")
+        repack = await client.get_repack_api(slug)
+        
+        print(f"📦 Size: {repack.repack_size}")
+        print(f"🧲 Magnet: {repack.torrent_sources[0].magnet.raw_uri[:60]}...")
+        
+        # 3. Check Real-time Health
+        health = await client.check_magnet_health(repack.torrent_sources[0].magnet)
+        if health:
+            print(f"🟢 Seeds: {health.seeds} | 🔴 Peers: {health.peers}")
 
-# Run the asynchronous main function
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-### Synchronous Usage
+> **Detailed Usage**: Check the [Wiki Usage Guide](wiki/Usage.md) for advanced examples.
 
-When simplicity is your goal or your application does not require asynchronicity, use the synchronous client.
+## 📚 Documentation
 
-```python
-from fitgirl import FitGirlSyncClient
+The documentation is hosted in the **GitHub Wiki**:
 
-with FitGirlSyncClient() as client:
-    # Search for games
-    game_data_list = client.search("strategy")
-    for game in game_data_list:
-        print(f"Title: {game.title} | Date: {game.date}")
+*   **[Home](wiki/Home.md)**: Architecture & Design.
+*   **[Installation](wiki/Installation.md)**: Setup & Requirements.
+*   **[Usage Guide](wiki/Usage.md)**: Common patterns & recipes.
+*   **[API Reference](wiki/API-Reference.md)**: Complete method documentation.
+*   **[Contributing](wiki/Contributing.md)**: How to build & test.
 
-    # Retrieve a specific game detail
-    game_details = client.get_game("another-game-slug")
-    for game in game_details:
-        print(f"Title: {game.title} | Download Links: {game.download_links}")
-```
+## ⚖️ Legal & Disclaimer
+
+This software is for **educational purposes only**. The authors are not affiliated with FitGirl Repacks. Downloading copyrighted material without permission may be illegal in your jurisdiction. Use this tool responsibly.
 
 ---
 
-## Guidelines & What Not to Do
-
-### Do's ✅
-- **Use Context Managers:** Always utilize the context managers (`async with` or `with`) to ensure sessions are closed properly.
-- **Handle Exceptions:** Wrap your API calls in try-except blocks to manage network errors gracefully.
-- **Optimize Queries:** Keep your queries specific to reduce overhead on the server.
-
-### Don'ts ❌
-- **Avoid Hardcoding:** Do not hardcode URLs or endpoints; let the library handle the base URL.
-- **Spamming Requests:** Do not flood the FitGirl Repacks website with too many requests in a short span – respect the service and its traffic limits. 🚦
-- **Ignore Parsing Errors:** If a parsing issue arises, ensure you handle it in your application logic rather than ignoring it.
-- **Overcomplicate:** Avoid adding unnecessary complexity in how you call or manage the client. The API is designed to be straightforward and efficient!
-
----
-
-## License
-
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-
----
-
-## Contact
-
-For questions, issues, or suggestions, please open an issue on our [github repository](https://github.com/xsyncio/fitgirl/issue).
+<div align="center">
+    <sub>Built with ❤️ by <a href="https://github.com/xsyncio">xsyncio</a></sub>
+</div>
